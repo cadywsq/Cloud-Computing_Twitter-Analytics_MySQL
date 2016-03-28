@@ -49,7 +49,7 @@ public class Main {
                     .addPrefixPath(PATH, servletHandler);
 
             Undertow server = Undertow.builder()
-                    .addHttpListener(8080, "0.0.0.0")
+                    .addHttpListener(80, "0.0.0.0")
                     .setHandler(path)
                     .build();
             server.start();
