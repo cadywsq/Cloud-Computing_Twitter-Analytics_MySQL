@@ -79,6 +79,8 @@ local.properties
 # mpeltonen/sbt-idea plugin
 .idea_modules/
 
+target/
+
 # JIRA plugin
 atlassian-ide-plugin.xml
 

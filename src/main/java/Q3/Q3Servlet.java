@@ -1,7 +1,7 @@
 package Q3;
+
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.List;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -11,34 +11,36 @@ import javax.servlet.http.HttpServletResponse;
 public class Q3Servlet extends HttpServlet {
     private static final String TEAM_ID = "SilverLining";
     private static final String TEAM_AWS_ACCOUNT = "6408-5853-5216";
+
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-    	System.out.println("ssss");
-    	int startDate =Integer.parseInt(req.getParameter("start_date")), endDate = Integer.parseInt(req.getParameter("end_date"));
-    	long startUid = Long.parseLong(req.getParameter("start_userid")), endUid = Long.parseLong(req.getParameter("end_userid"));
-    	String[] target = req.getParameter("words").split(",");
-    	System.out.println("target1: " + target[0] + " target2: " + target[1] + "target3:" + target[2]);
+        String id1 = req.getParameter("start_userid");
+        String id2 = req.getParameter("end_userid");
+        String date1 = req.getParameter("start_date");
+        String date2 = req.getParameter("end_date");
+        String[] words = req.getParameter("words").split(",");
+        String w1 = words[0];
+        String w2 = words[1];
+        String w3 = words[2];
+
+        System.out.println(String.format("%s\t%s\t%s\t%s\t%s", id1, id2, date1, date2, words));
+
         StringBuilder builder = new StringBuilder();
         builder.append(TEAM_ID + "," + TEAM_AWS_ACCOUNT + "\n");
-        Query3DAO dao = new Query3DAO();
-        List<StringBuilder> wordCount = dao.getWordCount(startDate, endDate, startUid, endUid);
-        for (String word : target) {
-        	int count = 0;
-        	for (StringBuilder sb : wordCount) {
-        		int index = sb.indexOf(word);
-        		int innerCount = 0;
-        		if (index != -1) {
-        			for (int i = index + word.length() + 1; i < sb.length() && sb.charAt(i) != ','; i++) {
-        				innerCount *= 10;
-        				innerCount += (int) sb.charAt(i) - 48;
-        			}
-        		}
-        		count += innerCount;
-        	}
-    		builder.append(word + ":" + count);
-    		builder.append("\n");
+
+        HbaseQuery3DAO dao = new HbaseQuery3DAO();
+        String result = null;
+        try {
+            result = dao.findWordCount(Long.parseLong(id1), Long.parseLong(id2), Integer.parseInt(date1), Integer.parseInt(date2), w1, w2, w3);
+        } catch (NumberFormatException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
-        resp.setContentType("text/plain;charset=UTF-8");
+
+        builder.append(result);
         PrintWriter writer = resp.getWriter();
         writer.write(builder.toString());
         writer.close();
