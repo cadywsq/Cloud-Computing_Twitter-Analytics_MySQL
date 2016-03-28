@@ -1,17 +1,16 @@
 package Q2;
+
+import com.mysql.jdbc.PreparedStatement;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-
-import com.mysql.jdbc.PreparedStatement;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class Query2DAO {
-    private static List<Connection> connectionPool = new ArrayList<Connection>();
-    // Use JDBC driver to connect MySQL database
-    private static final String JDBC_DRIVER = "com.mysql.jdbc.Driver";
+    private static BlockingQueue<Connection> connectionPool = new LinkedBlockingQueue<>(1000);
     // Name of database
     private static final String DB_NAME = "chang";
 
@@ -20,43 +19,51 @@ public class Query2DAO {
     private static final String DB_USER = "root";
     private static final String DB_PWD = "1111";
 
-    // Get connection from pool to minimize latency of connection
-    private synchronized Connection getConnection() throws Exception {
-        // If connection pool has idle connection, use it
-        if (connectionPool.size() > 0) {
-            return connectionPool.remove(connectionPool.size() - 1);
+    public Query2DAO() {
+        for (int i = 0; i < 1000; i++) {
+            try {
+                connectionPool.add(DriverManager.getConnection(URL, DB_USER, DB_PWD));
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
-        // else establish a new connection
-        Class.forName(JDBC_DRIVER);
+    }
 
-        return DriverManager.getConnection(URL, DB_USER, DB_PWD);
+    // Get connection from pool to minimize latency of connection
+    private Connection getConnection() {
+        // If connection pool has idle connection, use it
+        try {
+            return connectionPool.take();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     // Put connection back to pool for reuse
-    private synchronized void releaseConnection(Connection con) {
-        connectionPool.add(con);
+    private void releaseConnection(Connection con) {
+        connectionPool.offer(con);
     }
 
-    public String getTweetByUserAndHT(String userTag) {
+    public String getTweetByUserAndHT(String userAndHashtag) {
         // Use PreparedStatement instead of statement for performance optimization
         // so that the SQL statement that is sent gets pre-compiled (i.e. a query plan is prepared) in the DBMS
         PreparedStatement stmt = null;
         String res = null;
-        Connection conn;
-
+        Connection conn = getConnection();
+        ;
         try {
-            conn = getConnection();
             String tableName = "tweets";
-            String sql = "SELECT content FROM " + tableName + " WHERE user_ht = '" + userTag + "';";
+            String sql = "SELECT content FROM " + tableName + " WHERE user_ht = '" + userAndHashtag + "';";
             stmt = (PreparedStatement) conn.prepareStatement(sql);
             ResultSet rs = stmt.executeQuery(sql);
-            if (rs.next())
+            if (rs.next()) {
                 res = rs.getString("content");
-            // release connection to pool after use
-            releaseConnection(conn);
-        } catch (Exception e) {
+            }
+        } catch (SQLException e) {
             e.printStackTrace();
         } finally {
+            // release connection to pool after use
+            releaseConnection(conn);
             if (stmt != null) {
                 try {
                     stmt.close();
@@ -66,8 +73,6 @@ public class Query2DAO {
             }
 
         }
-
         return res;
-
     }
 }
