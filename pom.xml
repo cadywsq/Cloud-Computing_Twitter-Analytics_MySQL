@@ -35,7 +35,7 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <mainClass>TeamProj.TeamProj.Main</mainClass>
+                    <mainClass>TeamProjHBase.TeamProjHBase.Main</mainClass>
                 </configuration>
             </plugin>
         </plugins>
