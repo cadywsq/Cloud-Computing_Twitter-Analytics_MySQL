@@ -23,6 +23,7 @@ public class Main {
     public static final String PATH = "/";
     public static void main(String[] args) throws Exception{
         try {
+            System.out.println("vera");
             DeploymentInfo servletBuilder = deployment()
                     .setClassLoader(Main.class.getClassLoader())
                     .setContextPath(PATH)
