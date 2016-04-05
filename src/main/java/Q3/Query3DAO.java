@@ -1,54 +1,16 @@
-package Q3;
+package q3;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import com.jolbox.bonecp.BoneCP;
-import com.jolbox.bonecp.BoneCPConfig;
+
+import static utility.Utility.GetConnection;
+import static utility.Utility.InitializePooler;
+import static utility.Utility.ReleaseConnection;
+import static utility.Utility.connectionPool;
+
 public class Query3DAO {
-    // Name of database
-   // private static final String DB_NAME = "chang";
-    private static final String URL = "jdbc:mysql://localhost/chang";
-    private static final String DB_USER = "root";
-    private static final String DB_PWD = "123";
-    private static BoneCP connectionPool;
-    public static void InitializePooler() {
-		try {
-			BoneCPConfig config = new BoneCPConfig();
-			config.setJdbcUrl(URL);
-			config.setUsername(DB_USER);
-			config.setPassword(DB_PWD);
-			config.setMinConnectionsPerPartition(5);
-			config.setMaxConnectionsPerPartition(1000);
-			config.setPartitionCount(1);
-			connectionPool = new BoneCP(config);
-		} catch(Exception ex) {
-			ex.printStackTrace();
-		}
-	}
-	public static void ReleasePooler() {
-		if(connectionPool != null) {
-			connectionPool.shutdown();
-		}
-	}
-	public static Connection GetConnection() { 
-		Connection connection = null;
-		try {
-			connection = connectionPool.getConnection();
-		} catch (Exception ex) {
-			ex.getMessage();
-		}
-		return connection;
-	}	
-	public static void ReleaseConnection(Connection connection) { 
-		try {
-			if (connection != null) {
-				connection.close();
-			}
-		}	catch (Exception ex) {
-			ex.getMessage();
-		}
-	}
+
     public  Query3DAO() {
     	if(connectionPool == null) {
     		InitializePooler();

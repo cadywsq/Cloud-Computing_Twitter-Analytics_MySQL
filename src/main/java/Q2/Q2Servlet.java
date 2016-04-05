@@ -1,4 +1,6 @@
-package Q2;
+package q2;
+
+import utility.Utility;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -6,28 +8,27 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.LinkedHashMap;
-import java.util.Map;
+
+import static utility.Utility.TEAM_AWS_ACCOUNT;
+import static utility.Utility.TEAM_ID;
 
 public class Q2Servlet extends HttpServlet {
-    private static final String TEAM_ID = "SilverLining";
-    private static final String TEAM_AWS_ACCOUNT = "6408-5853-5216";
 
     // Cache 1,000,000 key and value pairs
-    private static LRUCache<String, String> cache = LRUCache.newInstance();
+    private static Utility.Cache cache = new Utility.Cache();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String userid = req.getParameter("userid");
         String hashtag = req.getParameter("hashtag");
-
+        String key = userid + "#" + hashtag;
         System.out.println(userid + "\t" + hashtag);
+
         StringBuilder builder = new StringBuilder();
         builder.append(TEAM_ID + "," + TEAM_AWS_ACCOUNT + "\n");
 
-        String key = userid + "," + hashtag;
         // Try to get value from cache
-        String value = cache.get(key);
+        String value = (String) cache.get(key);
         // If it's in cached append value to result builder
         if (value != null) {
             builder.append(value);
@@ -50,25 +51,6 @@ public class Q2Servlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        // TODO Auto-generated method stub
         super.doPost(req, resp);
-    }
-
-    public static class LRUCache<K, V> extends LinkedHashMap<K, V> {
-        private static final long serialVersionUID = 2733236027662897287L;
-        private static int size = 1000000;
-
-        private LRUCache() {
-            super(size, 0.75f, true);
-        }
-
-        @Override
-        protected boolean removeEldestEntry(Map.Entry<K, V> eldest) {
-            return size() > size;
-        }
-
-        public static <K, V> LRUCache<K, V> newInstance() {
-            return new LRUCache<K, V>();
-        }
     }
 }

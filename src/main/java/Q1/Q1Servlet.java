@@ -1,4 +1,4 @@
-package Q1;
+package q1;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -10,9 +10,10 @@ import java.math.BigInteger;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import static utility.Utility.TEAM_AWS_ACCOUNT;
+import static utility.Utility.TEAM_ID;
+
 public class Q1Servlet extends HttpServlet {
-    private static final String TEAM_ID = "SilverLining";
-    private static final String TEAM_AWS_ACCOUNT = "6408-5853-5216";
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     @Override
