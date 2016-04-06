@@ -1,13 +1,14 @@
-package q4;
+package query4;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.PriorityBlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -25,7 +26,7 @@ public class WriteQ4Servlet extends HttpServlet {
      */
     private class Worker extends Thread {
         private String key = null;
-        private final PriorityBlockingQueue<Runnable> tasks = new PriorityBlockingQueue<>();
+        private final BlockingQueue<Runnable> tasks = new LinkedBlockingQueue<>();
 
         public Worker() {
             this.start();
@@ -72,7 +73,7 @@ public class WriteQ4Servlet extends HttpServlet {
             @Override
             public void run() {
                 if (operation.equals("get")) {
-                    dao.putData(tweetId, dao.getQuery(tweetId, fields, payload));
+                    dao.putData(dao.getQuery(tweetId, fields, payload));
                 } else {
                     dao.getData(tweetId, fields);
                 }

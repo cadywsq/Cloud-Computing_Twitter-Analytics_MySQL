@@ -1,4 +1,4 @@
-package q1;
+package query1;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;

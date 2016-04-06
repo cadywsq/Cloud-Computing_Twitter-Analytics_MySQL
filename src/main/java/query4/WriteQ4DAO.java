@@ -1,4 +1,4 @@
-package q4;
+package query4;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -56,7 +56,7 @@ public class WriteQ4DAO {
         return allFields.toString().substring(0, allFields.length() - 1);
     }
 
-    void putData(String tweetId, String query) {
+    void putData(String query) {
         Statement stmt = null;
         Connection conn = null;
         try {

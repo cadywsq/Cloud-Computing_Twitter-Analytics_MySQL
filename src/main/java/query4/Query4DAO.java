@@ -1,4 +1,4 @@
-package q4;
+package query4;
 
 import utility.Utility;
 

@@ -1,9 +1,9 @@
 package TeamProj.main;
 
-import q1.Q1Servlet;
-import q2.Q2Servlet;
-import q3.Q3Servlet;
-import q4.Q4Servlet;
+import query1.Q1Servlet;
+import query2.Q2Servlet;
+import query3.Q3Servlet;
+import query4.Q4Servlet;
 import io.undertow.Handlers;
 import io.undertow.Undertow;
 import io.undertow.server.HttpHandler;
@@ -31,10 +31,10 @@ public class Main {
                     .setContextPath(PATH)
                     .setDeploymentName("handler.war")
                     .addServlets(
-                            servlet("Q1Servlet", Q1Servlet.class).addMapping("/q1"),
-                            servlet("Q2Servlet", Q2Servlet.class).addMapping("/q2"),
-                            servlet("Q3Servlet", Q3Servlet.class).addMapping("/q3"),
-                            servlet("Q4Servlet", Q4Servlet.class).addMapping("/q4")
+                            servlet("Q1Servlet", Q1Servlet.class).addMapping("/query1"),
+                            servlet("Q2Servlet", Q2Servlet.class).addMapping("/query2"),
+                            servlet("Q3Servlet", Q3Servlet.class).addMapping("/query3"),
+                            servlet("Q4Servlet", Q4Servlet.class).addMapping("/query4")
                     );
 
             DeploymentManager manager = defaultContainer().addDeployment(servletBuilder);
