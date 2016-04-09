@@ -91,7 +91,7 @@ public class Utility {
 
     public static String formatResponse() {
         String header = TEAM_ID + "," + TEAM_AWS_ACCOUNT + "\n";
-        return header + "\n";
+        return header;
     }
 
 }

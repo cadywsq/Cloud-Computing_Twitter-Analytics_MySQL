@@ -5,12 +5,15 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import static utility.Utility.formatResponse;
 
 /**
  * @author Siqi Wang siqiw1 on 4/5/16.
@@ -58,7 +61,7 @@ public class WriteQ4Servlet extends HttpServlet {
     }
 
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    protected void doGet(HttpServletRequest req, final HttpServletResponse resp) throws ServletException, IOException {
         final String tweetId = req.getParameter("tweetid");
         // set or get
         final String operation = req.getParameter("op");
@@ -72,10 +75,24 @@ public class WriteQ4Servlet extends HttpServlet {
         getWorker(tweetId).addTask(new Runnable() {
             @Override
             public void run() {
+                StringBuilder result = new StringBuilder();
+                result.append(formatResponse());
+
                 if (operation.equals("get")) {
                     dao.putData(dao.getQuery(tweetId, fields, payload));
+                    result.append("success\n");
                 } else {
-                    dao.getData(tweetId, fields);
+                    String response = dao.getData(tweetId, fields);
+                    result.append(response + "\n");
+                }
+
+                PrintWriter writer;
+                try {
+                    writer = resp.getWriter();
+                    writer.write(result.toString());
+                    writer.close();
+                } catch (IOException e) {
+                    logger.log(Level.WARNING, "Failed when get writer for response");
                 }
             }
         });
@@ -105,6 +122,4 @@ public class WriteQ4Servlet extends HttpServlet {
         }
         return worker;
     }
-
-
 }
