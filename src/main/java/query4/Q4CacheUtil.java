@@ -7,9 +7,9 @@ import util.Utility;
  */
 public class Q4CacheUtil {
 
-    private Utility.Cache<String, Tweet> caches = new Utility.Cache();
+    private static Utility.Cache<String, Tweet> caches = new Utility.Cache();
 
-    String processSetCache(String tweetId, String fields, String payload) {
+    static void processSetCache(String tweetId, String fields, String payload) {
         String[] fieldList = fields.split(",");
         String[] payloadList = payload.split(",");
         Tweet cache;
@@ -22,10 +22,9 @@ public class Q4CacheUtil {
         for (int i = 0; i < Math.min(fieldList.length, payloadList.length); i++) {
             cache.setField(fieldList[i], payloadList[i]);
         }
-        return "success\n";
     }
 
-    String processGetCache(String tweetId, String fields) {
+    static String processGetCache(String tweetId, String fields) {
         if (fields == null || fields.isEmpty()) {
             return "";
         }

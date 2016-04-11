@@ -74,7 +74,7 @@ public class Q4Servlet extends HttpServlet {
         getWorker(tweetId).addTask(new Runnable() {
             @Override
             public void run() {
-                StringBuilder result = new StringBuilder();
+                StringBuilder result = formatResponse();
                 final String op = req.getParameter("op");
                 // For set request, return response directly
                 if (op.equals("set")) {
@@ -106,7 +106,6 @@ public class Q4Servlet extends HttpServlet {
                         String fields = httpServletReq.getParameter("fields");
                         String payload = httpServletReq.getParameter("payload");
 
-                        result.append(formatResponse());
                         if (operation.equals("set")) {
                             dbUtil.putData(dbUtil.getQuery(tweetId, fields, payload));
                             cacheUtil.processSetCache(tweetId, fields, payload);

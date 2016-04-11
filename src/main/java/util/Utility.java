@@ -89,8 +89,8 @@ public class Utility {
         }
     }
 
-    public static String formatResponse() {
-        String header = TEAM_ID + "," + TEAM_AWS_ACCOUNT + "\n";
+    public static StringBuilder formatResponse() {
+        StringBuilder header = new StringBuilder(TEAM_ID + "," + TEAM_AWS_ACCOUNT + "\n");
         return header;
     }
 
