@@ -7,20 +7,20 @@ import java.sql.Statement;
 import java.util.HashSet;
 import java.util.Set;
 
-import static utility.Utility.GetConnection;
-import static utility.Utility.InitializePooler;
-import static utility.Utility.ReleaseConnection;
-import static utility.Utility.connectionPool;
+import static util.Utility.GetConnection;
+import static util.Utility.InitializePooler;
+import static util.Utility.ReleaseConnection;
+import static util.Utility.connectionPool;
 
 /**
  * @author Siqi Wang siqiw1 on 4/5/16.
  */
-public class WriteQ4DAO {
+public class Q4WriteUtil {
     private static final String TABLE_NAME = "newtweets";
     private static final Set<String> storedTweetIds = new HashSet<>();
 
 
-    public WriteQ4DAO() {
+    public Q4WriteUtil() {
         if (connectionPool == null) {
             InitializePooler();
         }

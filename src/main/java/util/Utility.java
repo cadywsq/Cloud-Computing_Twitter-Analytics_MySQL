@@ -1,4 +1,4 @@
-package utility;
+package util;
 
 import com.jolbox.bonecp.BoneCP;
 import com.jolbox.bonecp.BoneCPConfig;

@@ -1,6 +1,6 @@
 package query2;
 
-import utility.Utility;
+import util.Utility;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -9,8 +9,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-import static utility.Utility.TEAM_AWS_ACCOUNT;
-import static utility.Utility.TEAM_ID;
+import static util.Utility.TEAM_AWS_ACCOUNT;
+import static util.Utility.TEAM_ID;
 
 public class Q2Servlet extends HttpServlet {
 

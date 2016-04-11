@@ -15,7 +15,7 @@ public class Q3Servlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         int startDate = Integer.parseInt(req.getParameter("start_date").replaceAll("-", "")), endDate = Integer.parseInt(req.getParameter("end_date").replaceAll("-", ""));
         long startUid = Long.parseLong(req.getParameter("start_userid")), endUid = Long.parseLong(req.getParameter("end_userid"));
-        ;
+
         String[] target = req.getParameter("words").split(",");
         Query3DAO dao = new Query3DAO();
         int[] res = dao.getWordCount(startDate, endDate, startUid, endUid, ";" + target[0] + ":", ";" + target[1] + ":", ";" + target[2] + ":");

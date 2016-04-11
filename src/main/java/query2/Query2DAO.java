@@ -5,10 +5,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import static utility.Utility.GetConnection;
-import static utility.Utility.InitializePooler;
-import static utility.Utility.ReleaseConnection;
-import static utility.Utility.connectionPool;
+import static util.Utility.GetConnection;
+import static util.Utility.InitializePooler;
+import static util.Utility.ReleaseConnection;
+import static util.Utility.connectionPool;
 
 public class Query2DAO {
 //    private static List<Connection> connectionPool = new ArrayList<>();
