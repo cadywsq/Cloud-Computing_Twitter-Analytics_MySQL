@@ -68,9 +68,6 @@ public class Q4Servlet extends HttpServlet {
         final String sequence = req.getParameter("seq");
         final int seq = Integer.valueOf(sequence);
 
-        final Q4WriteUtil dbUtil = new Q4WriteUtil();
-        final Q4CacheUtil cacheUtil = new Q4CacheUtil();
-
         getWorker(tweetId).addTask(new Runnable() {
             @Override
             public void run() {
@@ -92,7 +89,7 @@ public class Q4Servlet extends HttpServlet {
                         requestsMap.put(tweetId, requestQueue);
                     }
                     requestQueue.addRequest(new RequestQueue.Request(seq, req, resp));
-                    requestsToProcess = requestQueue.getRequests();
+                    requestsToProcess = Q4WriteUtil.mergeRequests(requestQueue.getRequests());
                     if (requestQueue.isEmpty()) {
                         requestsMap.remove(tweetId);
                     }
@@ -107,15 +104,15 @@ public class Q4Servlet extends HttpServlet {
                         String payload = httpServletReq.getParameter("payload");
 
                         if (operation.equals("set")) {
-                            dbUtil.putData(dbUtil.getQuery(tweetId, fields, payload));
-                            cacheUtil.processSetCache(tweetId, fields, payload);
+                            Q4WriteUtil.putData(Q4WriteUtil.getQuery(tweetId, fields, payload));
+                            Q4CacheUtil.processSetCache(tweetId, fields, payload);
                         } else {
-                            String cached = cacheUtil.processGetCache(tweetId, fields);
+                            String cached = Q4CacheUtil.processGetCache(tweetId, fields);
                             String response;
                             if (!cached.equals("")) {
                                 response = cached;
                             } else {
-                                response = dbUtil.getData(tweetId, fields);
+                                response = Q4WriteUtil.getData(tweetId, fields);
                             }
                             result.append(response + "\n");
                             sendResponse(result, httpServletResp);

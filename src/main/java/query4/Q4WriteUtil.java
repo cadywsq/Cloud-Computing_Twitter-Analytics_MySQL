@@ -1,5 +1,6 @@
 package query4;
 
+import javax.servlet.http.HttpServletRequest;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -28,7 +29,7 @@ public class Q4WriteUtil {
         }
     }
 
-    String getQuery(String tweetId, String fields, String payload) {
+    static String getQuery(String tweetId, String fields, String payload) {
         String[] fieldList = fields.split(",");
         String[] payloadList = payload.split(",");
 
@@ -54,11 +55,11 @@ public class Q4WriteUtil {
         return query;
     }
 
-    private String toString(StringBuilder allFields) {
+    private static String toString(StringBuilder allFields) {
         return allFields.toString().substring(0, allFields.length() - 1);
     }
 
-    void putData(String query) {
+    static void putData(String query) {
         Statement stmt = null;
         Connection conn = null;
         try {
@@ -81,7 +82,7 @@ public class Q4WriteUtil {
         }
     }
 
-    String getData(String tweetId, String fields) {
+    static String getData(String tweetId, String fields) {
         Statement stmt = null;
         Connection conn = null;
         ResultSet rs;
@@ -119,12 +120,26 @@ public class Q4WriteUtil {
         }
     }
 
-    List<RequestQueue.Request> mergeRequests(List<RequestQueue.Request> requestList) {
+    /**
+     * Merge continuous set request to one, for batch processing.
+     *
+     * @param requestList List of continuous Requests to be processed.
+     * @return List of combined Requests to be processed
+     */
+    static List<RequestQueue.Request> mergeRequests(List<RequestQueue.Request> requestList) {
         ArrayList<RequestQueue.Request> res = new ArrayList<>();
 
         RequestQueue.Request lastSet = null;
-        for (RequestQueue.Request cur: requestList) {
+        for (RequestQueue.Request cur : requestList) {
             if (cur.getRequest().getParameter("op").equals("set")) {
+                HttpServletRequest lastRequest = lastSet.getRequest();
+                HttpServletRequest curRequest = cur.getRequest();
+                String lastField = lastRequest.getParameter("field");
+                String lastPayload = lastRequest.getParameter("payload");
+                String curField = lastField + "," + curRequest.getParameter("field");
+                String curPayload = lastPayload + "," + curRequest.getParameter("payload");
+                cur.getRequest().setAttribute("field", curField);
+                cur.getRequest().setAttribute("payload", curPayload);
                 lastSet = cur;
             } else {
                 if (lastSet != null) {
