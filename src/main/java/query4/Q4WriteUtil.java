@@ -119,7 +119,7 @@ public class Q4WriteUtil {
         }
     }
 
-    List<RequestQueue.Request> MergeRequests(List<RequestQueue.Request> requestList) {
+    List<RequestQueue.Request> mergeRequests(List<RequestQueue.Request> requestList) {
         ArrayList<RequestQueue.Request> res = new ArrayList<>();
 
         RequestQueue.Request lastSet = null;
@@ -128,7 +128,7 @@ public class Q4WriteUtil {
                 lastSet = cur;
             } else {
                 if (lastSet != null) {
-                    res.add(new RequestQueue.Request(lastSet));
+                    res.add(lastSet);
                     lastSet = null;
                 }
                 res.add(cur);

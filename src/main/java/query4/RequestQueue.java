@@ -23,12 +23,6 @@ public class RequestQueue {
             this.setResponse(response);
         }
 
-        public Request(Request request) {
-            this.seq = request.seq;
-            this.request = request.request;
-            this.response = request.response;
-        }
-
         @Override
         public int compareTo(Request o) {
             return Integer.compare(this.seq, o.seq);
