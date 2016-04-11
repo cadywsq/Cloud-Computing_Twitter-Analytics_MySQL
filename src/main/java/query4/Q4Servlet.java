@@ -1,5 +1,7 @@
 package query4;
 
+import javax.servlet.http.HttpServlet;
+
 <<<<<<< HEAD
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
