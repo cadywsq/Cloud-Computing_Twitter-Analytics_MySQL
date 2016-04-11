@@ -128,7 +128,7 @@ public class Q4WriteUtil {
                 lastSet = cur;
             } else {
                 if (lastSet != null) {
-                    res.add(lastSet);
+                    res.add(new RequestQueue.Request(lastSet));
                     lastSet = null;
                 }
                 res.add(cur);
