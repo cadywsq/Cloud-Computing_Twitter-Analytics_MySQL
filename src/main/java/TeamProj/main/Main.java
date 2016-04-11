@@ -9,7 +9,7 @@ import io.undertow.servlet.api.DeploymentManager;
 import query1.Q1Servlet;
 import query2.Q2Servlet;
 import query3.Q3Servlet;
-import query4.Q4Servlet;
+import query4.Q4ServletPre;
 
 import javax.servlet.ServletException;
 
@@ -34,7 +34,7 @@ public class Main {
                             servlet("Q1Servlet", Q1Servlet.class).addMapping("/q1"),
                             servlet("Q2Servlet", Q2Servlet.class).addMapping("/q2"),
                             servlet("Q3Servlet", Q3Servlet.class).addMapping("/q3"),
-                            servlet("Q4Servlet", Q4Servlet.class).addMapping("/q4")
+                            servlet("Q4Servlet", Q4ServletPre.class).addMapping("/q4")
                     );
 
             DeploymentManager manager = defaultContainer().addDeployment(servletBuilder);
