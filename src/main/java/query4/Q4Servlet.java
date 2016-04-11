@@ -1,5 +1,6 @@
 package query4;
 
+<<<<<<< HEAD
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -9,9 +10,12 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+=======
+>>>>>>> a844ad42ec138fc85b77260d959a5be40bffd87f
 /**
- * @author Siqi Wang siqiw1 on 4/5/16.
+ * Created by wangxinlei on 4/11/16.
  */
+<<<<<<< HEAD
 class Sequence {
     int number;
     public Sequence (int number) {
@@ -49,4 +53,7 @@ public class Q4Servlet extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         doGet(req, resp);
     }
+=======
+public class Q4Servlet {
+>>>>>>> a844ad42ec138fc85b77260d959a5be40bffd87f
 }
