@@ -39,8 +39,9 @@ public class Q4Servlet extends HttpServlet {
             }
         }
         map.get(tweetId).number++;
-        sequence.notify();
-
+        synchronized(sequence) {
+            sequence.notify();
+        }
     }
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
