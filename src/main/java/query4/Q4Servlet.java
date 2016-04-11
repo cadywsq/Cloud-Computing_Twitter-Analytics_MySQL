@@ -75,6 +75,12 @@ public class Q4Servlet extends HttpServlet {
             @Override
             public void run() {
                 StringBuilder result = new StringBuilder();
+                final String op = req.getParameter("op");
+                // For set request, return response directly
+                if (op.equals("set")) {
+                    result.append("success\n");
+                    sendResponse(result, resp);
+                }
 
                 RequestQueue requestQueue;
                 List<RequestQueue.Request> requestsToProcess;
@@ -102,9 +108,6 @@ public class Q4Servlet extends HttpServlet {
 
                         result.append(formatResponse());
                         if (operation.equals("set")) {
-                            result.append("success\n");
-                            sendResponse(result, httpServletResp);
-
                             dbUtil.putData(dbUtil.getQuery(tweetId, fields, payload));
                             cacheUtil.processSetCache(tweetId, fields, payload);
                         } else {
