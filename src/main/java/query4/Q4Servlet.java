@@ -1,4 +1,5 @@
 package query4;
+
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -7,9 +8,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-/**
- * Created by wangxinlei on 4/11/16.
- */
+
 class Sequence {
     int number;
     public Sequence (int number) {
@@ -40,9 +39,7 @@ public class Q4Servlet extends HttpServlet {
             }
         }
         map.get(tweetId).number++;
-        synchronized (sequence) {
-            sequence.notify();
-        }
+        sequence.notify();
 
     }
     @Override
