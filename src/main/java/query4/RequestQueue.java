@@ -2,8 +2,10 @@ package query4;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.PriorityBlockingQueue;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.PriorityQueue;
+import java.util.Queue;
 
 /**
  * @author Siqi Wang siqiw1 on 4/10/16.
@@ -43,7 +45,7 @@ public class RequestQueue {
         }
     }
 
-    private BlockingQueue<Request> requestQueue = new PriorityBlockingQueue<>();
+    private Queue<Request> requestQueue = new PriorityQueue<>();
     private int lastProcessedSeq;
 
 
@@ -53,13 +55,13 @@ public class RequestQueue {
      *
      * @return queue of requests to be processed
      */
-    public BlockingQueue<Request> getRequests() {
-        BlockingQueue<Request> requestsToProcess = new PriorityBlockingQueue<>();
-        BlockingQueue<Request> requests = new PriorityBlockingQueue<>();
+    public List<Request> getRequests() {
+        List<Request> requestsToProcess = new ArrayList<>();
+        Queue<Request> requests = new PriorityQueue<>();
 
         while (!requests.isEmpty() && lastProcessedSeq + 1 == requests.peek().seq) {
             lastProcessedSeq = requests.peek().seq;
-            requestsToProcess.offer(requests.poll());
+            requestsToProcess.add(requests.poll());
         }
         return requestsToProcess;
     }

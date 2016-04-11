@@ -6,6 +6,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -18,7 +19,7 @@ import static util.Utility.formatResponse;
 /**
  * @author Siqi Wang siqiw1 on 4/5/16.
  */
-public class WriteQ4Servlet extends HttpServlet {
+public class Q4Servlet extends HttpServlet {
     private static Logger logger = Logger.getLogger("Phase3_Q4");
 
     private ConcurrentHashMap<String, Worker> workers = new ConcurrentHashMap<>();
@@ -76,16 +77,19 @@ public class WriteQ4Servlet extends HttpServlet {
                 StringBuilder result = new StringBuilder();
 
                 RequestQueue requestQueue;
-                if (requestsMap.containsKey(tweetId)) {
-                    requestQueue = requestsMap.get(tweetId);
-                } else {
-                    requestQueue = new RequestQueue();
-                    requestsMap.put(tweetId, requestQueue);
-                }
-                requestQueue.addRequest(new RequestQueue.Request(seq, req, resp));
-                BlockingQueue<RequestQueue.Request> requestsToProcess = requestQueue.getRequests();
-                if (requestQueue.isEmpty()) {
-                    requestsMap.remove(tweetId);
+                List<RequestQueue.Request> requestsToProcess;
+                synchronized (this) {
+                    if (requestsMap.containsKey(tweetId)) {
+                        requestQueue = requestsMap.get(tweetId);
+                    } else {
+                        requestQueue = new RequestQueue();
+                        requestsMap.put(tweetId, requestQueue);
+                    }
+                    requestQueue.addRequest(new RequestQueue.Request(seq, req, resp));
+                    requestsToProcess = requestQueue.getRequests();
+                    if (requestQueue.isEmpty()) {
+                        requestsMap.remove(tweetId);
+                    }
                 }
 
                 if (!requestsToProcess.isEmpty()) {
