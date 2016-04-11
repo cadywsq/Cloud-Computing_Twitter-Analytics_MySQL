@@ -6,9 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import static util.Utility.GetConnection;
 import static util.Utility.InitializePooler;
@@ -20,8 +18,6 @@ import static util.Utility.connectionPool;
  */
 public class Q4WriteUtil {
     private static final String TABLE_NAME = "newtweets";
-    private static final Set<String> storedTweetIds = new HashSet<>();
-
 
     public Q4WriteUtil() {
         if (connectionPool == null) {
@@ -42,24 +38,16 @@ public class Q4WriteUtil {
         String[] payloadList = payload.split(",");
 
         String query;
-        StringBuilder builder = new StringBuilder();
         StringBuilder allFields = new StringBuilder();
         StringBuilder allPayloads = new StringBuilder();
 
-        if (storedTweetIds.contains(tweetId)) {
-            for (int i = 0; i < Math.min(fieldList.length, payloadList.length); i++) {
-                builder.append(fieldList[i] + "=" + payloadList[i] + ",");
-            }
-            query = "UPDATE " + TABLE_NAME + " SET " + toString(builder) + " WHERE tweetid=" + tweetId;
-        } else {
-            for (int i = 0; i < Math.min(fieldList.length, payloadList.length); i++) {
-                allFields.append(fieldList[i] + ",");
-                allPayloads.append(payloadList[i] + ",");
-            }
-            query = "INSERT INTO " + TABLE_NAME + "(" + toString(allFields) + ")" + " VALUES " + "(" + toString
-                    (allPayloads) + ")";
-            storedTweetIds.add(tweetId);
+        //INSERT INTO table (a,b,c) VALUES (1,2,3) ON DUPLICATE KEY UPDATE c=c+1;
+        for (int i = 0; i < Math.min(fieldList.length, payloadList.length); i++) {
+            allFields.append(fieldList[i] + ",");
+            allPayloads.append(payloadList[i] + ",");
         }
+        query = "INSERT INTO " + TABLE_NAME + "(" + toString(allFields) + ")" + " VALUES " + "(" + toString
+                (allPayloads) + ")" + "ON DUPLICATE KEY UPDATE tweetid=" + tweetId;
         return query;
     }
 
@@ -144,11 +132,15 @@ public class Q4WriteUtil {
                 HttpServletRequest curRequest = cur.getRequest();
                 String lastField = lastRequest.getParameter("field");
                 String lastPayload = lastRequest.getParameter("payload");
-                String curField = lastField + "," + curRequest.getParameter("field");
-                String curPayload = lastPayload + "," + curRequest.getParameter("payload");
-                cur.getRequest().setAttribute("field", curField);
-                cur.getRequest().setAttribute("payload", curPayload);
+
+                if (!lastField.isEmpty() && !lastPayload.isEmpty()) {
+                    String curField = lastField + "," + curRequest.getParameter("field");
+                    String curPayload = lastPayload + "," + curRequest.getParameter("payload");
+                    cur.getRequest().setAttribute("field", curField);
+                    cur.getRequest().setAttribute("payload", curPayload);
+                }
                 lastSet = cur;
+
             } else {
                 if (lastSet != null) {
                     res.add(lastSet);

@@ -65,18 +65,22 @@ public class Q4Servlet extends HttpServlet {
     @Override
     protected void doGet(final HttpServletRequest req, final HttpServletResponse resp) throws ServletException, IOException {
         final String tweetId = req.getParameter("tweetid");
+        System.out.println("tweetid\t"+ tweetId);
         final String sequence = req.getParameter("seq");
         final int seq = Integer.valueOf(sequence);
+        System.out.println("seq\t"+seq);
 
         getWorker(tweetId).addTask(new Runnable() {
             @Override
             public void run() {
                 StringBuilder result = formatResponse();
                 final String op = req.getParameter("op");
+                System.out.println(op);
                 // For set request, return response directly
                 if (op.equals("set")) {
                     result.append("success\n");
                     sendResponse(result, resp);
+                    System.out.println("Set request response sent.");
                 }
 
                 RequestQueue requestQueue;
@@ -84,12 +88,17 @@ public class Q4Servlet extends HttpServlet {
                 synchronized (this) {
                     if (requestsMap.containsKey(tweetId)) {
                         requestQueue = requestsMap.get(tweetId);
+                        System.out.println("request queue got.");
                     } else {
                         requestQueue = new RequestQueue();
                         requestsMap.put(tweetId, requestQueue);
+                        System.out.println("create new request queue.");
                     }
                     requestQueue.addRequest(new RequestQueue.Request(seq, req, resp));
+                    System.out.println("new request added");
                     requestsToProcess = Q4WriteUtil.mergeRequests(requestQueue.getRequests());
+                    System.out.println("merged requestqueue got.");
+                    System.out.println("requestToProcess size: " + requestsToProcess.size());
                     if (requestQueue.isEmpty()) {
                         requestsMap.remove(tweetId);
                     }
@@ -102,20 +111,26 @@ public class Q4Servlet extends HttpServlet {
                         String operation = httpServletReq.getParameter("op");
                         String fields = httpServletReq.getParameter("fields");
                         String payload = httpServletReq.getParameter("payload");
+                        System.out.println("payload\t" + payload);
 
                         if (operation.equals("set")) {
                             Q4WriteUtil.putData(Q4WriteUtil.getQuery(tweetId, fields, payload));
+                            System.out.println("Data put to DB completed.");
                             Q4CacheUtil.processSetCache(tweetId, fields, payload);
+                            System.out.println("Data cached.");
                         } else {
                             String cached = Q4CacheUtil.processGetCache(tweetId, fields);
                             String response;
                             if (!cached.equals("")) {
                                 response = cached;
+                                System.out.println("Get field found in cache.");
                             } else {
                                 response = Q4WriteUtil.getData(tweetId, fields);
+                                System.out.println("Get from DB completed.");
                             }
                             result.append(response + "\n");
                             sendResponse(result, httpServletResp);
+                            System.out.println("Get request response sent.");
                         }
                     }
                 }
@@ -125,7 +140,8 @@ public class Q4Servlet extends HttpServlet {
                 PrintWriter writer;
                 try {
                     writer = response.getWriter();
-                    writer.write(result.toString());
+                    writer.println(result.toString());
+                    System.out.println(result.toString());
                     writer.close();
                 } catch (IOException e) {
                     logger.log(Level.WARNING, "Failed when get writer for response");
