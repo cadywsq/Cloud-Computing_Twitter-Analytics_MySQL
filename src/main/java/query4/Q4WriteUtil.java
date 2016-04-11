@@ -18,13 +18,11 @@ import static util.Utility.connectionPool;
  */
 public class Q4WriteUtil {
     private static final String TABLE_NAME = "newtweets";
-
     public Q4WriteUtil() {
         if (connectionPool == null) {
             InitializePooler();
         }
     }
-
     /**
      * Format the string of database SQL query for set requests.
      *

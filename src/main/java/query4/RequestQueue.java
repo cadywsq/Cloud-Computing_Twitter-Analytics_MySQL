@@ -11,7 +11,6 @@ import java.util.Queue;
  * @author Siqi Wang siqiw1 on 4/10/16.
  */
 public class RequestQueue {
-
     public static class Request implements Comparable<Request> {
         private int seq;
         private HttpServletRequest request;
