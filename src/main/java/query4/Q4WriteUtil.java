@@ -4,7 +4,9 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import static util.Utility.GetConnection;
@@ -115,5 +117,23 @@ public class Q4WriteUtil {
                 }
             }
         }
+    }
+
+    List<RequestQueue.Request> MergeRequests(List<RequestQueue.Request> requestList) {
+        ArrayList<RequestQueue.Request> res = new ArrayList<>();
+
+        RequestQueue.Request lastSet = null;
+        for (RequestQueue.Request cur: requestList) {
+            if (cur.getRequest().getParameter("op").equals("set")) {
+                lastSet = cur;
+            } else {
+                if (lastSet != null) {
+                    res.add(lastSet);
+                    lastSet = null;
+                }
+                res.add(cur);
+            }
+        }
+        return res;
     }
 }
