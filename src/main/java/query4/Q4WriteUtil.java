@@ -29,6 +29,14 @@ public class Q4WriteUtil {
         }
     }
 
+    /**
+     * Format the string of database SQL query for set requests.
+     *
+     * @param tweetId
+     * @param fields
+     * @param payload
+     * @return
+     */
     static String getQuery(String tweetId, String fields, String payload) {
         String[] fieldList = fields.split(",");
         String[] payloadList = payload.split(",");
