@@ -59,7 +59,7 @@ public class RequestQueue {
         List<Request> requestsToProcess = new ArrayList<>();
         Queue<Request> requests = new PriorityQueue<>();
 
-        while (!requests.isEmpty() && lastProcessedSeq + 1 == requests.peek().seq) {
+        while (!requestQueue.isEmpty() && lastProcessedSeq + 1 == requests.peek().seq) {
             lastProcessedSeq = requests.peek().seq;
             requestsToProcess.add(requests.poll());
         }

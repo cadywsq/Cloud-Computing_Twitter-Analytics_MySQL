@@ -35,7 +35,7 @@ public class Q4WriteUtil {
      */
     static String getQuery(String tweetId, String fields, String payload) {
         String[] fieldList = fields.split(",");
-        String[] payloadList = payload.split(",");
+        String[] payloadList = (payload + ",").split(",");
 
         String query;
         StringBuilder allFields = new StringBuilder();
@@ -124,8 +124,8 @@ public class Q4WriteUtil {
      */
     static List<RequestQueue.Request> mergeRequests(List<RequestQueue.Request> requestList) {
         ArrayList<RequestQueue.Request> res = new ArrayList<>();
-
         RequestQueue.Request lastSet = null;
+        System.out.println("requestQueue size before merge: " + requestList.size());
         for (RequestQueue.Request cur : requestList) {
             if (cur.getRequest().getParameter("op").equals("set")) {
                 HttpServletRequest lastRequest = lastSet.getRequest();
