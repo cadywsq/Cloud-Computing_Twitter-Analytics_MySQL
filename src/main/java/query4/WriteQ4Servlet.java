@@ -6,8 +6,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -25,11 +23,12 @@ public class WriteQ4Servlet extends HttpServlet {
 
     private ConcurrentHashMap<String, Worker> workers = new ConcurrentHashMap<>();
     private ConcurrentLinkedQueue<Worker> idleWorkers = new ConcurrentLinkedQueue<>();
+    private ConcurrentHashMap<String, RequestQueue> requestsMap = new ConcurrentHashMap<>();
 
     /**
      * Worker thread to process requests for same key, as it should be serialized.
      */
-    private class Worker extends Thread implements Comparable<Worker> {
+    private class Worker extends Thread {
         private String key = null;
         private final BlockingQueue<Runnable> tasks = new LinkedBlockingQueue<>();
 
@@ -57,58 +56,72 @@ public class WriteQ4Servlet extends HttpServlet {
             }
         }
 
-        public void addTask(Worker task) {
+        public void addTask(Runnable task) {
             tasks.offer(task);
-        }
-
-        @Override
-        public int compareTo(Worker o) {
-            return this.seq - o.seq;
         }
     }
 
     @Override
-    protected void doGet(HttpServletRequest req, final HttpServletResponse resp) throws ServletException, IOException {
+    protected void doGet(final HttpServletRequest req, final HttpServletResponse resp) throws ServletException, IOException {
         final String tweetId = req.getParameter("tweetid");
-        // set or get
-        final String operation = req.getParameter("op");
-        String sequence = req.getParameter("seq");
-        int seq = Integer.valueOf(sequence);
-        //comma separated list of fields
-        final String fields = req.getParameter("fields");
-        //comma separated list of base64* encoded fields
-        final String payload = req.getParameter("payload");
+        final String sequence = req.getParameter("seq");
+        final int seq = Integer.valueOf(sequence);
 
-        final Q4WriteUtil dbDao = new Q4WriteUtil();
-        final Q4CacheUtil cacheDao = new Q4CacheUtil();
-        getWorker(tweetId).addTask(new Worker(seq) {
+        final Q4WriteUtil dbUtil = new Q4WriteUtil();
+        final Q4CacheUtil cacheUtil = new Q4CacheUtil();
+
+        getWorker(tweetId).addTask(new Runnable() {
             @Override
             public void run() {
                 StringBuilder result = new StringBuilder();
-                result.append(formatResponse());
-                if (operation.equals("set")) {
-                    result.append("success\n");
-                    sendResponse(result);
-                    dbDao.putData(dbDao.getQuery(tweetId, fields, payload));
-                    cacheDao.processSetCache(tweetId, fields, payload);
+
+                RequestQueue requestQueue;
+                if (requestsMap.containsKey(tweetId)) {
+                    requestQueue = requestsMap.get(tweetId);
                 } else {
-                    String cached = cacheDao.processGetCache(tweetId, fields);
-                    String response;
-                    if (!cached.equals("")) {
-                        response = cached;
-                    } else {
-                        response = dbDao.getData(tweetId, fields);
-                    }
-                    result.append(response + "\n");
-                    sendResponse(result);
+                    requestQueue = new RequestQueue();
+                    requestsMap.put(tweetId, requestQueue);
+                }
+                requestQueue.addRequest(new RequestQueue.Request(seq, req, resp));
+                BlockingQueue<RequestQueue.Request> requestsToProcess = requestQueue.getRequests();
+                if (requestQueue.isEmpty()) {
+                    requestsMap.remove(tweetId);
                 }
 
+                if (!requestsToProcess.isEmpty()) {
+                    for (RequestQueue.Request request : requestsToProcess) {
+                        HttpServletRequest httpServletReq = request.getRequest();
+                        HttpServletResponse httpServletResp = request.getResponse();
+                        String operation = httpServletReq.getParameter("op");
+                        String fields = httpServletReq.getParameter("fields");
+                        String payload = httpServletReq.getParameter("payload");
+
+                        result.append(formatResponse());
+                        if (operation.equals("set")) {
+                            result.append("success\n");
+                            sendResponse(result, httpServletResp);
+
+                            dbUtil.putData(dbUtil.getQuery(tweetId, fields, payload));
+                            cacheUtil.processSetCache(tweetId, fields, payload);
+                        } else {
+                            String cached = cacheUtil.processGetCache(tweetId, fields);
+                            String response;
+                            if (!cached.equals("")) {
+                                response = cached;
+                            } else {
+                                response = dbUtil.getData(tweetId, fields);
+                            }
+                            result.append(response + "\n");
+                            sendResponse(result, httpServletResp);
+                        }
+                    }
+                }
             }
 
-            private void sendResponse(StringBuilder result) {
+            private void sendResponse(StringBuilder result, HttpServletResponse response) {
                 PrintWriter writer;
                 try {
-                    writer = resp.getWriter();
+                    writer = response.getWriter();
                     writer.write(result.toString());
                     writer.close();
                 } catch (IOException e) {
