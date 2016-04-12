@@ -47,14 +47,13 @@ public class Q4Servlet extends HttpServlet {
             result.append("success");
             sendResponse(result, resp);
         }
-
         final int seqNum = Integer.parseInt(seq);
         if (!map.containsKey(tweetId)) {
             map.put(tweetId, new Sequence(0));
         }
         Sequence sequence = map.get(tweetId);
         synchronized (sequence) {
-            while (map.get(tweetId).sequence + 1 != seqNum) {
+            while (sequence.sequence + 1 != seqNum) {
                 try {
                     sequence.wait();
                 } catch (Exception e) {
@@ -62,13 +61,6 @@ public class Q4Servlet extends HttpServlet {
                 }
             }
         }
-<<<<<<< HEAD
-        map.get(tweetId).number++;
-        synchronized(sequence) {
-        sequence.sequence++;
-=======
-
->>>>>>> 31c9c5efb847874fc9289b9f29b38c59d1d8c3bf
         synchronized (sequence) {
             sequence.sequence++;
             if (operation.equals("set")) {
