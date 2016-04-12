@@ -15,8 +15,6 @@ import java.util.logging.Logger;
 import static util.Utility.formatResponse;
 
 public class Q4Servlet extends HttpServlet {
-
-
     private static ConcurrentHashMap<String, AtomicInteger> map;
     private static Logger logger = Logger.getLogger("Phase3_Q4");
 
@@ -43,7 +41,6 @@ public class Q4Servlet extends HttpServlet {
         }
         final int seqNum = Integer.parseInt(seq);
         AtomicInteger sequence;
-
         synchronized (map) {
             if (!map.containsKey(tweetId)) {
                 map.put(tweetId, new AtomicInteger(0));
@@ -51,24 +48,16 @@ public class Q4Servlet extends HttpServlet {
             sequence = map.get(tweetId);
         }
         synchronized (sequence) {
-<<<<<<< HEAD
-            while (sequence.sequence + 1 != seqNum) {
-=======
             while (sequence.get() + 1 != seqNum) {
->>>>>>> c48a4871074a73a5de9ee92cde3ac24928f51e01
                 try {
                     sequence.wait();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
-<<<<<<< HEAD
         }
         synchronized (sequence) {
-            sequence.sequence++;
-=======
             sequence.set(sequence.get() + 1);
->>>>>>> c48a4871074a73a5de9ee92cde3ac24928f51e01
             if (operation.equals("set")) {
                 Q4WriteUtil.putData(Q4WriteUtil.getQuery(tweetId, fields, payload));
                 Q4CacheUtil.processSetCache(tweetId, fields, payload);
