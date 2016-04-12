@@ -40,7 +40,7 @@ public class Q4Servlet extends HttpServlet {
         }
         map.get(tweetId).number++;
         synchronized(sequence) {
-            sequence.notify();
+            sequence.notifyAll();
         }
     }
     @Override
