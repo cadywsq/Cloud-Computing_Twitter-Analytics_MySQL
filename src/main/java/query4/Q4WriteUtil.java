@@ -18,11 +18,13 @@ import static util.Utility.connectionPool;
  */
 public class Q4WriteUtil {
     private static final String TABLE_NAME = "newtweets";
+
     public Q4WriteUtil() {
         if (connectionPool == null) {
             InitializePooler();
         }
     }
+
     /**
      * Format the string of database SQL query for set requests.
      *
@@ -36,13 +38,13 @@ public class Q4WriteUtil {
         String[] payloadList = (payload + ",").split(",");
 
         String query;
-        StringBuilder allFields = new StringBuilder();
-        StringBuilder allPayloads = new StringBuilder();
+        StringBuilder allFields = new StringBuilder("tweetid,");
+        StringBuilder allPayloads = new StringBuilder("'" + tweetId + "',");
 
         //INSERT INTO table (a,b,c) VALUES (1,2,3) ON DUPLICATE KEY UPDATE c=c+1;
         for (int i = 0; i < Math.min(fieldList.length, payloadList.length); i++) {
             allFields.append(fieldList[i] + ",");
-            allPayloads.append(payloadList[i] + ",");
+            allPayloads.append("'" + payloadList[i] + "'" + ",");
         }
         query = "INSERT INTO " + TABLE_NAME + "(" + toString(allFields) + ")" + " VALUES " + "(" + toString
                 (allPayloads) + ")" + "ON DUPLICATE KEY UPDATE tweetid=" + tweetId;
@@ -91,7 +93,7 @@ public class Q4WriteUtil {
         try {
             conn = GetConnection();
             stmt = conn.createStatement();
-            rs = stmt.executeQuery("SELECT " + query + "FROM" + TABLE_NAME + "WHERE tweetid=" + tweetId);
+            rs = stmt.executeQuery("SELECT " + query + " FROM " + TABLE_NAME + " WHERE tweetid=" + tweetId);
             if (rs.next()) {
                 for (String field : fieldList) {
                     result.append(rs.getString(field) + ",");
