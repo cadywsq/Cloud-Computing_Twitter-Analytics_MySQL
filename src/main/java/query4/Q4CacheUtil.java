@@ -43,6 +43,8 @@ public class Q4CacheUtil {
                     builder.append(cache.getField(field) + ",");
                 }
             }
+        }
+        if (builder.toString().length() > 0) {
             return builder.toString().substring(0, builder.length() - 1);
         }
         return "";

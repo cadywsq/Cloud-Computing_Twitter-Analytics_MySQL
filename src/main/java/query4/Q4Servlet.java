@@ -8,6 +8,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -15,15 +16,8 @@ import static util.Utility.formatResponse;
 
 public class Q4Servlet extends HttpServlet {
 
-    static class Sequence {
-        int sequence;
 
-        public Sequence(int sequence) {
-            this.sequence = sequence;
-        }
-    }
-
-    private static ConcurrentHashMap<String, Sequence> map;
+    private static ConcurrentHashMap<String, AtomicInteger> map;
     private static Logger logger = Logger.getLogger("Phase3_Q4");
 
     public void init(ServletConfig config) throws ServletException {
@@ -49,25 +43,27 @@ public class Q4Servlet extends HttpServlet {
         }
 
         final int seqNum = Integer.parseInt(seq);
-        if (!map.containsKey(tweetId)) {
-            map.put(tweetId, new Sequence(0));
+        AtomicInteger sequence;
+
+        synchronized (map) {
+            if (!map.containsKey(tweetId)) {
+                map.put(tweetId, new AtomicInteger(0));
+            }
+            sequence = map.get(tweetId);
         }
-        Sequence sequence = map.get(tweetId);
         synchronized (sequence) {
-            while (map.get(tweetId).sequence + 1 != seqNum) {
+            while (sequence.get() + 1 != seqNum) {
                 try {
                     sequence.wait();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
-        }
-
-        synchronized (sequence) {
-            sequence.sequence++;
+            sequence.set(sequence.get() + 1);
             if (operation.equals("set")) {
                 Q4WriteUtil.putData(Q4WriteUtil.getQuery(tweetId, fields, payload));
                 Q4CacheUtil.processSetCache(tweetId, fields, payload);
+                sequence.notifyAll();
             } else {
                 String cached = Q4CacheUtil.processGetCache(tweetId, fields);
                 String response;
@@ -76,12 +72,12 @@ public class Q4Servlet extends HttpServlet {
                 } else {
                     response = Q4WriteUtil.getData(tweetId, fields);
                 }
-                if (response != null && !response.isEmpty()) {
+                sequence.notifyAll();
+                if (response != null && !response.isEmpty() && !response.equals("null") && !response.equals("NULL")) {
                     result.append(response);
                 }
                 sendResponse(result, resp);
             }
-            sequence.notifyAll();
         }
     }
 
