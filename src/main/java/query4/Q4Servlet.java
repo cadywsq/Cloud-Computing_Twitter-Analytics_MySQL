@@ -7,8 +7,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -24,12 +23,12 @@ public class Q4Servlet extends HttpServlet {
         }
     }
 
-    private static Map<String, Sequence> map;
+    private static ConcurrentHashMap<String, Sequence> map;
     private static Logger logger = Logger.getLogger("Phase3_Q4");
 
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
-        map = new HashMap<>();
+        map = new ConcurrentHashMap<>();
     }
 
     @Override
@@ -37,10 +36,10 @@ public class Q4Servlet extends HttpServlet {
         final String tweetId = req.getParameter("tweetid");
         String operation = req.getParameter("op");
         String fields = req.getParameter("fields");
-        String payload = req.getParameter("payload");
+        String payload = req.getParameter("payload").replace(" ", "+");
         String seq = req.getParameter("seq");
         StringBuilder result = formatResponse();
-        System.out.println(String.format("tweetid: %s\top: %s\tseq: %s",tweetId,operation,seq));
+        System.out.println(String.format("tweetid: %s\top: %s\tseq: %s", tweetId, operation, seq));
         // Initialize connection pool
         new Q4WriteUtil();
         // For set request, return response directly
@@ -63,10 +62,15 @@ public class Q4Servlet extends HttpServlet {
                 }
             }
         }
+<<<<<<< HEAD
         map.get(tweetId).number++;
         synchronized(sequence) {
         sequence.sequence++;
+=======
+
+>>>>>>> 31c9c5efb847874fc9289b9f29b38c59d1d8c3bf
         synchronized (sequence) {
+            sequence.sequence++;
             if (operation.equals("set")) {
                 Q4WriteUtil.putData(Q4WriteUtil.getQuery(tweetId, fields, payload));
                 Q4CacheUtil.processSetCache(tweetId, fields, payload);
@@ -78,7 +82,9 @@ public class Q4Servlet extends HttpServlet {
                 } else {
                     response = Q4WriteUtil.getData(tweetId, fields);
                 }
-                result.append(response);
+                if (response != null && !response.isEmpty()) {
+                    result.append(response);
+                }
                 sendResponse(result, resp);
             }
             sequence.notifyAll();
