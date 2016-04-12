@@ -35,13 +35,27 @@ public class Q4Servlet extends HttpServlet {
     @Override
     protected void doGet(final HttpServletRequest req, final HttpServletResponse resp) throws ServletException, IOException {
         final String tweetId = req.getParameter("tweetid");
-        final int seq = Integer.parseInt(req.getParameter("seq"));
+        String operation = req.getParameter("op");
+        String fields = req.getParameter("fields");
+        String payload = req.getParameter("payload");
+        String seq = req.getParameter("seq");
+        StringBuilder result = formatResponse();
+        System.out.println(String.format("tweetid: %s\top: %s\tseq: %s",tweetId,operation,seq));
+        // Initialize connection pool
+        new Q4WriteUtil();
+        // For set request, return response directly
+        if (operation.equals("set")) {
+            result.append("success");
+            sendResponse(result, resp);
+        }
+
+        final int seqNum = Integer.parseInt(seq);
         if (!map.containsKey(tweetId)) {
             map.put(tweetId, new Sequence(0));
         }
         Sequence sequence = map.get(tweetId);
         synchronized (sequence) {
-            while (map.get(tweetId).sequence + 1 != seq) {
+            while (map.get(tweetId).sequence + 1 != seqNum) {
                 try {
                     sequence.wait();
                 } catch (Exception e) {
@@ -51,29 +65,19 @@ public class Q4Servlet extends HttpServlet {
         }
         sequence.sequence++;
         synchronized (sequence) {
-            String operation = req.getParameter("op");
-            String fields = req.getParameter("fields");
-            String payload = req.getParameter("payload");
-            StringBuilder result = formatResponse();
-
             if (operation.equals("set")) {
                 Q4WriteUtil.putData(Q4WriteUtil.getQuery(tweetId, fields, payload));
-                System.out.println("Data put to DB completed.");
                 Q4CacheUtil.processSetCache(tweetId, fields, payload);
-                System.out.println("Data cached.");
             } else {
                 String cached = Q4CacheUtil.processGetCache(tweetId, fields);
                 String response;
                 if (!cached.equals("")) {
                     response = cached;
-                    System.out.println("Get field found in cache.");
                 } else {
                     response = Q4WriteUtil.getData(tweetId, fields);
-                    System.out.println("Get from DB completed.");
                 }
-                result.append(response + "\n");
+                result.append(response);
                 sendResponse(result, resp);
-                System.out.println("Get request response sent.");
             }
             sequence.notifyAll();
         }
@@ -89,7 +93,6 @@ public class Q4Servlet extends HttpServlet {
         try {
             writer = response.getWriter();
             writer.println(result.toString());
-            System.out.println(result.toString());
             writer.close();
         } catch (IOException e) {
             logger.log(Level.WARNING, "Failed when get writer for response");
