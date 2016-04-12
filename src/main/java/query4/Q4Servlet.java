@@ -76,7 +76,7 @@ public class Q4Servlet extends HttpServlet {
                 } else {
                     response = Q4WriteUtil.getData(tweetId, fields);
                 }
-                if (response != null || !response.isEmpty()) {
+                if (response != null && !response.isEmpty()) {
                     result.append(response);
                 }
                 sendResponse(result, resp);
