@@ -1,24 +1,21 @@
 package query2;
 
+import util.ConnectionHelper;
+
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-
-import static util.Utility.GetConnection;
-import static util.Utility.InitializePooler;
-import static util.Utility.ReleaseConnection;
-import static util.Utility.connectionPool;
 
 public class Query2DAO {
 //    private static List<Connection> connectionPool = new ArrayList<>();
 //    private static BlockingQueue<Connection> connectionPool = new LinkedBlockingQueue<>(1000);
     // Name of database
 
-    public Query2DAO() {
-        if (connectionPool == null) {
-            InitializePooler();
-        }
+    private final ConnectionHelper connectionHelper;
+
+    public Query2DAO() throws SQLException {
+        connectionHelper = new ConnectionHelper();
     }
 
     public String getTweetByUserAndHT(String userAndHashtag) {
@@ -29,7 +26,7 @@ public class Query2DAO {
         Connection conn = null;
 
         try {
-            conn = GetConnection();
+            conn = connectionHelper.getConnection();
             String tableName = "tweets";
             String sql = "SELECT content FROM " + tableName + " WHERE user_ht = '" + userAndHashtag + "';";
             stmt = conn.createStatement();
@@ -41,7 +38,7 @@ public class Query2DAO {
             e.printStackTrace();
         } finally {
             // release connection to pool after use
-            ReleaseConnection(conn);
+            connectionHelper.releaseConnection(conn);
             if (stmt != null) {
                 try {
                     stmt.close();

@@ -12,7 +12,7 @@ public class Q4CacheUtil {
 
     private static Utility.Cache<String, Tweet> caches = new Utility.Cache();
 
-    static void processSetCache(String tweetId, String fields, String payload) {
+    static void setCache(String tweetId, String fields, String payload) {
         String[] fieldList = fields.split(",");
         String[] payloadList = payload.split(",");
         Tweet cache;
@@ -30,7 +30,7 @@ public class Q4CacheUtil {
         }
     }
 
-    static String processGetCache(String tweetId, String fields) {
+    static String getCache(String tweetId, String fields) {
         if (fields == null || fields.isEmpty()) {
             return "";
         }

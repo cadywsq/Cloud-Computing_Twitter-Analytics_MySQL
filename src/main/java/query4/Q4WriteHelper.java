@@ -1,5 +1,7 @@
 package query4;
 
+import util.ConnectionHelper;
+
 import javax.servlet.http.HttpServletRequest;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -8,21 +10,15 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-import static util.Utility.GetConnection;
-import static util.Utility.InitializePooler;
-import static util.Utility.ReleaseConnection;
-import static util.Utility.connectionPool;
-
 /**
  * @author Siqi Wang siqiw1 on 4/5/16.
  */
-public class Q4WriteUtil {
+public class Q4WriteHelper {
     private static final String TABLE_NAME = "newtweets";
+    private final ConnectionHelper connectionHelper;
 
-    public Q4WriteUtil() {
-        if (connectionPool == null) {
-            InitializePooler();
-        }
+    public Q4WriteHelper() throws SQLException {
+        connectionHelper = new ConnectionHelper();
     }
 
     /**
@@ -33,7 +29,7 @@ public class Q4WriteUtil {
      * @param payload
      * @return
      */
-    static String getQuery(String tweetId, String fields, String payload) {
+    String getQuery(String tweetId, String fields, String payload) {
         String[] fieldList = fields.split(",");
         String[] payloadList = (payload + ",").split(",");
 
@@ -51,18 +47,18 @@ public class Q4WriteUtil {
         return query;
     }
 
-    private static String toString(StringBuilder allFields) {
-        if (allFields.toString()!=null) {
+    private String toString(StringBuilder allFields) {
+        if (!allFields.toString().isEmpty()) {
             return allFields.toString().substring(0, allFields.length() - 1);
         }
         return "";
     }
 
-    static void putData(String query) {
+    void putData(String query) {
         Statement stmt = null;
         Connection conn = null;
         try {
-            conn = GetConnection();
+            conn = connectionHelper.getConnection();
             stmt = conn.createStatement();
             stmt.executeUpdate(query);
 
@@ -70,7 +66,7 @@ public class Q4WriteUtil {
             e.printStackTrace();
         } finally {
             // release connection to pool after use
-            ReleaseConnection(conn);
+            connectionHelper.releaseConnection(conn);
             if (stmt != null) {
                 try {
                     stmt.close();
@@ -81,7 +77,7 @@ public class Q4WriteUtil {
         }
     }
 
-    static String getData(String tweetId, String fields) {
+    String getData(String tweetId, String fields) {
         Statement stmt = null;
         Connection conn = null;
         ResultSet rs;
@@ -94,7 +90,7 @@ public class Q4WriteUtil {
 
         StringBuilder result = new StringBuilder();
         try {
-            conn = GetConnection();
+            conn = connectionHelper.getConnection();
             stmt = conn.createStatement();
             rs = stmt.executeQuery("SELECT " + query + " FROM " + TABLE_NAME + " WHERE tweetid=" + tweetId);
             if (rs.next()) {
@@ -108,7 +104,7 @@ public class Q4WriteUtil {
             return "";
         } finally {
             // release connection to pool after use
-            ReleaseConnection(conn);
+            connectionHelper.releaseConnection(conn);
             if (stmt != null) {
                 try {
                     stmt.close();
@@ -125,7 +121,7 @@ public class Q4WriteUtil {
      * @param requestList List of continuous Requests to be processed.
      * @return List of combined Requests to be processed
      */
-    static List<RequestQueue.Request> mergeRequests(List<RequestQueue.Request> requestList) {
+    List<RequestQueue.Request> mergeRequests(List<RequestQueue.Request> requestList) {
         ArrayList<RequestQueue.Request> res = new ArrayList<>();
         RequestQueue.Request lastSet = null;
         System.out.println("requestQueue size before merge: " + requestList.size());

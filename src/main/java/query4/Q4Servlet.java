@@ -7,7 +7,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.concurrent.ConcurrentHashMap;
+import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -17,12 +19,18 @@ import static util.Utility.formatResponse;
 public class Q4Servlet extends HttpServlet {
 
 
-    private static ConcurrentHashMap<String, AtomicInteger> map;
-    private static Logger logger = Logger.getLogger("Phase3_Q4");
+    private Map<String, AtomicInteger> map;
+    private static final Logger logger = Logger.getLogger("Phase3_Q4");
+    private final Q4WriteHelper dao;
 
+    public Q4Servlet() throws SQLException {
+        dao = new Q4WriteHelper();
+    }
+
+    @Override
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
-        map = new ConcurrentHashMap<>();
+        map = new HashMap<>();
     }
 
     @Override
@@ -33,9 +41,8 @@ public class Q4Servlet extends HttpServlet {
         String payload = req.getParameter("payload").replace(" ", "+");
         String seq = req.getParameter("seq");
         StringBuilder result = formatResponse();
-        System.out.println(String.format("tweetid: %s\top: %s\tseq: %s", tweetId, operation, seq));
-        // Initialize connection pool
-        new Q4WriteUtil();
+//        System.out.println(String.format("tweetid: %s\top: %s\tseq: %s", tweetId, operation, seq));
+
         // For set request, return response directly
         if (operation.equals("set")) {
             result.append("success");
@@ -44,13 +51,15 @@ public class Q4Servlet extends HttpServlet {
 
         final int seqNum = Integer.parseInt(seq);
         AtomicInteger sequence;
-
+        long startTime = System.nanoTime();
         synchronized (map) {
             if (!map.containsKey(tweetId)) {
                 map.put(tweetId, new AtomicInteger(0));
             }
-             sequence = map.get(tweetId);
+            sequence = map.get(tweetId);
         }
+        System.out.println("Time to access map: " + (System.nanoTime() - startTime) + "ns");
+
         synchronized (sequence) {
             while (sequence.get() + 1 != seqNum) {
                 try {
@@ -59,24 +68,25 @@ public class Q4Servlet extends HttpServlet {
                     e.printStackTrace();
                 }
             }
-            sequence.set(sequence.get() + 1);
+            sequence.incrementAndGet();
             if (operation.equals("set")) {
-                Q4WriteUtil.putData(Q4WriteUtil.getQuery(tweetId, fields, payload));
-                Q4CacheUtil.processSetCache(tweetId, fields, payload);
+                dao.putData(dao.getQuery(tweetId, fields, payload));
+//                Q4CacheUtil.setCache(tweetId, fields, payload);
+                sequence.notifyAll();
             } else {
-                String cached = Q4CacheUtil.processGetCache(tweetId, fields);
+//                String cached = Q4CacheUtil.getCache(tweetId, fields);
                 String response;
-                if (!cached.equals("")) {
-                    response = cached;
-                } else {
-                    response = Q4WriteUtil.getData(tweetId, fields);
-                }
+//                if (!cached.equals("")) {
+//                    response = cached;
+//                } else {
+                response = dao.getData(tweetId, fields);
+//                }
+                sequence.notifyAll();
                 if (response != null && !response.isEmpty() && !response.equals("null") && !response.equals("NULL")) {
                     result.append(response);
                 }
+                sendResponse(result, resp);
             }
-            sequence.notifyAll();
-            sendResponse(result,resp);
         }
     }
 
