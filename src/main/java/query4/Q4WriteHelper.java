@@ -29,7 +29,7 @@ public class Q4WriteHelper {
      * @param payload
      * @return
      */
-    String getQuery(String tweetId, String fields, String payload) {
+    String getQuery(String tweetId, String fields, String payload, String seq) {
         String[] fieldList = fields.split(",");
         String[] payloadList = (payload + ",").split(",");
 
@@ -37,7 +37,6 @@ public class Q4WriteHelper {
         StringBuilder allFields = new StringBuilder("tweetid,");
         StringBuilder allPayloads = new StringBuilder("'" + tweetId + "',");
 
-        //INSERT INTO table (a,b,c) VALUES (1,2,3) ON DUPLICATE KEY UPDATE c=c+1;
         for (int i = 0; i < Math.min(fieldList.length, payloadList.length); i++) {
             allFields.append(fieldList[i] + ",");
             allPayloads.append("'" + payloadList[i] + "'" + ",");

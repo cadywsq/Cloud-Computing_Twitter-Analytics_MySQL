@@ -58,7 +58,7 @@ public class Q4Servlet extends HttpServlet {
             }
             sequence = map.get(tweetId);
         }
-        System.out.println("Time to access map: " + (System.nanoTime() - startTime) + "ns");
+//        System.out.println("Time to access map: " + (System.nanoTime() - startTime) + "ns");
 
         synchronized (sequence) {
             while (sequence.get() + 1 != seqNum) {
@@ -70,7 +70,9 @@ public class Q4Servlet extends HttpServlet {
             }
             sequence.incrementAndGet();
             if (operation.equals("set")) {
+                long putStartTime = System.nanoTime();
                 dao.putData(dao.getQuery(tweetId, fields, payload));
+                System.out.println("Time to put: " + (System.nanoTime() - putStartTime) + "ns");
 //                Q4CacheUtil.setCache(tweetId, fields, payload);
                 sequence.notifyAll();
             } else {
@@ -79,7 +81,9 @@ public class Q4Servlet extends HttpServlet {
 //                if (!cached.equals("")) {
 //                    response = cached;
 //                } else {
+                long getStartTime = System.nanoTime();
                 response = dao.getData(tweetId, fields);
+                System.out.println("Time to get: " + (System.nanoTime() - getStartTime) + "ns");
 //                }
                 sequence.notifyAll();
                 if (response != null && !response.isEmpty() && !response.equals("null") && !response.equals("NULL")) {
