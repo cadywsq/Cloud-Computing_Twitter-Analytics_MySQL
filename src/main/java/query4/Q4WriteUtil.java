@@ -52,7 +52,10 @@ public class Q4WriteUtil {
     }
 
     private static String toString(StringBuilder allFields) {
-        return allFields.toString().substring(0, allFields.length() - 1);
+        if (allFields.toString()!=null) {
+            return allFields.toString().substring(0, allFields.length() - 1);
+        }
+        return "";
     }
 
     static void putData(String query) {
