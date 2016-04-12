@@ -6,31 +6,42 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-class Sequence {
-    int number;
-    public Sequence (int number) {
-        this.number = number;
-    }
-}
+import static util.Utility.formatResponse;
+
 public class Q4Servlet extends HttpServlet {
+
+    static class Sequence {
+        int sequence;
+
+        public Sequence(int sequence) {
+            this.sequence = sequence;
+        }
+    }
+
     private static Map<String, Sequence> map;
+    private static Logger logger = Logger.getLogger("Phase3_Q4");
+
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
-        map = new HashMap<String, Sequence>();
+        map = new HashMap<>();
     }
+
     @Override
     protected void doGet(final HttpServletRequest req, final HttpServletResponse resp) throws ServletException, IOException {
         final String tweetId = req.getParameter("tweetid");
         final int seq = Integer.parseInt(req.getParameter("seq"));
-        if (map.get(tweetId) == null) {
+        if (!map.containsKey(tweetId)) {
             map.put(tweetId, new Sequence(0));
         }
         Sequence sequence = map.get(tweetId);
         synchronized (sequence) {
-            while(map.get(tweetId).number != seq - 1) {
+            while (map.get(tweetId).sequence + 1 != seq) {
                 try {
                     sequence.wait();
                 } catch (Exception e) {
@@ -38,13 +49,50 @@ public class Q4Servlet extends HttpServlet {
                 }
             }
         }
-        map.get(tweetId).number++;
-        synchronized(sequence) {
-            sequence.notify();
+        sequence.sequence++;
+        synchronized (sequence) {
+            String operation = req.getParameter("op");
+            String fields = req.getParameter("fields");
+            String payload = req.getParameter("payload");
+            StringBuilder result = formatResponse();
+
+            if (operation.equals("set")) {
+                Q4WriteUtil.putData(Q4WriteUtil.getQuery(tweetId, fields, payload));
+                System.out.println("Data put to DB completed.");
+                Q4CacheUtil.processSetCache(tweetId, fields, payload);
+                System.out.println("Data cached.");
+            } else {
+                String cached = Q4CacheUtil.processGetCache(tweetId, fields);
+                String response;
+                if (!cached.equals("")) {
+                    response = cached;
+                    System.out.println("Get field found in cache.");
+                } else {
+                    response = Q4WriteUtil.getData(tweetId, fields);
+                    System.out.println("Get from DB completed.");
+                }
+                result.append(response + "\n");
+                sendResponse(result, resp);
+                System.out.println("Get request response sent.");
+            }
+            sequence.notifyAll();
         }
     }
+
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         doGet(req, resp);
+    }
+
+    private void sendResponse(StringBuilder result, HttpServletResponse response) {
+        PrintWriter writer;
+        try {
+            writer = response.getWriter();
+            writer.println(result.toString());
+            System.out.println(result.toString());
+            writer.close();
+        } catch (IOException e) {
+            logger.log(Level.WARNING, "Failed when get writer for response");
+        }
     }
 }
