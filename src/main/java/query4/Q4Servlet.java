@@ -62,8 +62,9 @@ public class Q4Servlet extends HttpServlet {
                 }
             }
         }
-        sequence.sequence++;
+
         synchronized (sequence) {
+            sequence.sequence++;
             if (operation.equals("set")) {
                 Q4WriteUtil.putData(Q4WriteUtil.getQuery(tweetId, fields, payload));
                 Q4CacheUtil.processSetCache(tweetId, fields, payload);
