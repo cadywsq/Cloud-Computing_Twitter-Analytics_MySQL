@@ -45,7 +45,7 @@ public class Q4Servlet extends HttpServlet {
             if (!map.containsKey(tweetId)) {
                 map.put(tweetId, new AtomicInteger(0));
             }
-            sequence = map.get(tweetId);
+             sequence = map.get(tweetId);
         }
         synchronized (sequence) {
             while (sequence.get() + 1 != seqNum) {
@@ -61,7 +61,6 @@ public class Q4Servlet extends HttpServlet {
             if (operation.equals("set")) {
                 Q4WriteUtil.putData(Q4WriteUtil.getQuery(tweetId, fields, payload));
                 Q4CacheUtil.processSetCache(tweetId, fields, payload);
-                sequence.notifyAll();
             } else {
                 String cached = Q4CacheUtil.processGetCache(tweetId, fields);
                 String response;
@@ -70,12 +69,12 @@ public class Q4Servlet extends HttpServlet {
                 } else {
                     response = Q4WriteUtil.getData(tweetId, fields);
                 }
-                sequence.notifyAll();
                 if (response != null && !response.isEmpty() && !response.equals("null") && !response.equals("NULL")) {
                     result.append(response);
                 }
-                sendResponse(result, resp);
             }
+            sequence.notifyAll();
+            sendResponse(result,resp);
         }
     }
 
