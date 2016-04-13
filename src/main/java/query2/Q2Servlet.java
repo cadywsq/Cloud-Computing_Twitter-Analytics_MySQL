@@ -8,6 +8,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.SQLException;
 
 import static util.Utility.TEAM_AWS_ACCOUNT;
 import static util.Utility.TEAM_ID;
@@ -15,7 +16,12 @@ import static util.Utility.TEAM_ID;
 public class Q2Servlet extends HttpServlet {
 
     // Cache 1,000,000 key and value pairs
-    private static Utility.Cache cache = new Utility.Cache();
+    private final Utility.Cache cache = new Utility.Cache();
+    private final Query2DAO dao;
+
+    public Q2Servlet() throws SQLException {
+        dao = new Query2DAO();
+    }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -33,9 +39,6 @@ public class Q2Servlet extends HttpServlet {
         if (value != null) {
             builder.append(value);
         } else {
-            //Get result from database
-            Query2DAO dao = new Query2DAO();
-
             String tweets = dao.getTweetByUserAndHT(key);
             // Put key and value from database to cache
             cache.put(key, tweets);
@@ -45,7 +48,7 @@ public class Q2Servlet extends HttpServlet {
         builder.append("\n");
         resp.setContentType("text/plain;charset=UTF-8");
         PrintWriter writer = resp.getWriter();
-        writer.write(builder.toString());
+        writer.write(builder.toString() + "\n");
         writer.close();
     }
 

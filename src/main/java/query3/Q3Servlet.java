@@ -6,10 +6,16 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.SQLException;
 
 public class Q3Servlet extends HttpServlet {
     private static final String TEAM_ID = "SilverLining";
     private static final String TEAM_AWS_ACCOUNT = "6408-5853-5216";
+    private final Query3DAO dao;
+
+    public Q3Servlet() throws SQLException {
+        dao = new Query3DAO();
+    }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -17,7 +23,7 @@ public class Q3Servlet extends HttpServlet {
         long startUid = Long.parseLong(req.getParameter("start_userid")), endUid = Long.parseLong(req.getParameter("end_userid"));
 
         String[] target = req.getParameter("words").split(",");
-        Query3DAO dao = new Query3DAO();
+
         int[] res = dao.getWordCount(startDate, endDate, startUid, endUid, ";" + target[0] + ":", ";" + target[1] + ":", ";" + target[2] + ":");
 
         resp.setContentType("text/plain;charset=UTF-8");

@@ -71,8 +71,7 @@ public class Q1Servlet extends HttpServlet {
     /**
      * Reverse cipher step 2 of spiralize
      *
-     * @param side
-     *            side length of spiral 2-D array
+     * @param side side length of spiral 2-D array
      * @param arr
      * @return the decrypted message
      */

@@ -1,5 +1,7 @@
 package query4;
 
+import util.ConnectionHelper;
+
 import javax.servlet.http.HttpServletRequest;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -8,21 +10,15 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-import static util.Utility.GetConnection;
-import static util.Utility.InitializePooler;
-import static util.Utility.ReleaseConnection;
-import static util.Utility.connectionPool;
-
 /**
  * @author Siqi Wang siqiw1 on 4/5/16.
  */
-public class Q4WriteUtil {
+public class Q4WriteHelper {
     private static final String TABLE_NAME = "newtweets";
+    private final ConnectionHelper connectionHelper;
 
-    public Q4WriteUtil() {
-        if (connectionPool == null) {
-            InitializePooler();
-        }
+    public Q4WriteHelper() throws SQLException {
+        connectionHelper = new ConnectionHelper();
     }
 
     /**
@@ -33,36 +29,42 @@ public class Q4WriteUtil {
      * @param payload
      * @return
      */
-    static String getQuery(String tweetId, String fields, String payload) {
+    String getQuery(String tweetId, String fields, String payload, int seq) {
         String[] fieldList = fields.split(",");
         String[] payloadList = (payload + ",").split(",");
-
         String query;
-        StringBuilder allFields = new StringBuilder("tweetid,");
-        StringBuilder allPayloads = new StringBuilder("'" + tweetId + "',");
+        if (seq == 1) {
+            StringBuilder allFields = new StringBuilder("tweetid,");
+            StringBuilder allPayloads = new StringBuilder("'" + tweetId + "',");
+            for (int i = 0; i < Math.min(fieldList.length, payloadList.length); i++) {
+                allFields.append(fieldList[i] + ",");
+                allPayloads.append("'" + payloadList[i] + "'" + ",");
+            }
+            query = "INSERT INTO " + TABLE_NAME + "(" + toString(allFields) + ")" + " VALUES " + "(" + toString(allPayloads) + ")";
 
-        //INSERT INTO table (a,b,c) VALUES (1,2,3) ON DUPLICATE KEY UPDATE c=c+1;
-        for (int i = 0; i < Math.min(fieldList.length, payloadList.length); i++) {
-            allFields.append(fieldList[i] + ",");
-            allPayloads.append("'" + payloadList[i] + "'" + ",");
+        } else {
+            StringBuilder builder = new StringBuilder();
+            for (int i = 0; i < Math.min(fieldList.length, payloadList.length); i++) {
+                builder.append(fieldList[i] + "='" + payloadList[i] + "',");
+            }
+            query = "UPDATE " + TABLE_NAME + " SET " + toString(builder) + " WHERE tweetid=" + tweetId;
+
         }
-        query = "INSERT INTO " + TABLE_NAME + "(" + toString(allFields) + ")" + " VALUES " + "(" + toString
-                (allPayloads) + ")" + "ON DUPLICATE KEY UPDATE tweetid=" + tweetId;
         return query;
     }
 
-    private static String toString(StringBuilder allFields) {
-        if (allFields.toString()!=null) {
+    private String toString(StringBuilder allFields) {
+        if (!allFields.toString().isEmpty()) {
             return allFields.toString().substring(0, allFields.length() - 1);
         }
         return "";
     }
 
-    static void putData(String query) {
+    void putData(String query) {
         Statement stmt = null;
         Connection conn = null;
         try {
-            conn = GetConnection();
+            conn = connectionHelper.getConnection();
             stmt = conn.createStatement();
             stmt.executeUpdate(query);
 
@@ -70,7 +72,7 @@ public class Q4WriteUtil {
             e.printStackTrace();
         } finally {
             // release connection to pool after use
-            ReleaseConnection(conn);
+            connectionHelper.releaseConnection(conn);
             if (stmt != null) {
                 try {
                     stmt.close();
@@ -81,7 +83,7 @@ public class Q4WriteUtil {
         }
     }
 
-    static String getData(String tweetId, String fields) {
+    String getData(String tweetId, String fields) {
         Statement stmt = null;
         Connection conn = null;
         ResultSet rs;
@@ -94,7 +96,7 @@ public class Q4WriteUtil {
 
         StringBuilder result = new StringBuilder();
         try {
-            conn = GetConnection();
+            conn = connectionHelper.getConnection();
             stmt = conn.createStatement();
             rs = stmt.executeQuery("SELECT " + query + " FROM " + TABLE_NAME + " WHERE tweetid=" + tweetId);
             if (rs.next()) {
@@ -108,7 +110,7 @@ public class Q4WriteUtil {
             return "";
         } finally {
             // release connection to pool after use
-            ReleaseConnection(conn);
+            connectionHelper.releaseConnection(conn);
             if (stmt != null) {
                 try {
                     stmt.close();
@@ -125,7 +127,7 @@ public class Q4WriteUtil {
      * @param requestList List of continuous Requests to be processed.
      * @return List of combined Requests to be processed
      */
-    static List<RequestQueue.Request> mergeRequests(List<RequestQueue.Request> requestList) {
+    List<RequestQueue.Request> mergeRequests(List<RequestQueue.Request> requestList) {
         ArrayList<RequestQueue.Request> res = new ArrayList<>();
         RequestQueue.Request lastSet = null;
         System.out.println("requestQueue size before merge: " + requestList.size());
