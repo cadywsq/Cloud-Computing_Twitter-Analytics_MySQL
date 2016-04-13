@@ -5,13 +5,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-//import java.io.BufferedReader;
 import java.io.IOException;
-//import java.io.InputStreamReader;
 import java.io.PrintWriter;
-//import java.net.HttpURLConnection;
-//import java.net.MalformedURLException;
-//import java.net.URL;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
@@ -26,58 +21,32 @@ public class Q4Servlet extends HttpServlet {
     private Map<String, AtomicInteger> map;
     private static final Logger logger = Logger.getLogger("Phase3_Q4");
     private final Q4WriteHelper dao;
-
+    private static final String dns = "http://ec2-54-87-192-127.compute-1.amazonaws.com/q4?";
     public Q4Servlet() throws SQLException {
         dao = new Q4WriteHelper();
     }
     public void initInstance () {
         instances = new String[6];
-        instances[0] = "ec2-52-91-225-126.compute-1.amazonaws.com";
-        instances[1] = "ec2-52-90-232-209.compute-1.amazonaws.com";
-        instances[2] = "ec2-52-91-216-37.compute-1.amazonaws.com";
-        instances[3] = "ec2-52-91-23-158.compute-1.amazonaws.com";
-        instances[4] = "ec2-52-91-60-8.compute-1.amazonaws.com";
-        instances[5] = "ec2-54-87-192-127.compute-1.amazonaws.com";
+        instances[0] = "http://ec2-52-91-225-126.compute-1.amazonaws.com/q4?";
+        instances[1] = "http://ec2-52-90-232-209.compute-1.amazonaws.com/q4?";
+        instances[2] = "http://ec2-52-91-216-37.compute-1.amazonaws.com/q4?";
+        instances[3] = "http://ec2-52-91-23-158.compute-1.amazonaws.com/q4?";
+        instances[4] = "http://ec2-52-91-60-8.compute-1.amazonaws.com/q4?";
+        instances[5] = "http://ec2-54-87-192-127.compute-1.amazonaws.com/q4?";
     }
     @Override
     public void init(ServletConfig config) throws ServletException {
-        initInstance();
         super.init(config);
         map = new HashMap<>();
+        initInstance();
     }
-//    private StringBuilder getHttpResponse(String dcDns, String path) throws MalformedURLException {
-//        String submitString = "http://" + dcDns + "/q4?" +path;
-//        System.out.println(submitString);
-//        URL url = new URL(submitString);
-//        HttpURLConnection httpConnection = null;
-//        int responseCode = 0;
-//        while (true) {
-//            try {
-//                while (responseCode != HttpURLConnection.HTTP_OK) {
-//                    Thread.sleep(1);
-//                    httpConnection = (HttpURLConnection) url.openConnection();
-//                    responseCode = httpConnection.getResponseCode();
-//                }
-//                BufferedReader br = new BufferedReader(new InputStreamReader(httpConnection.getInputStream()));
-//                String response;
-//                StringBuilder builder = new StringBuilder();
-//                while ((response = br.readLine()) != null) {
-//                    builder.append(response);
-//                }
-//                return builder;
-//            } catch (Exception e) {
-////                System.out.println("Response Code:" + responseCode);
-////                System.out.println("Try Again");
-//            }
-//        }
-//    }
     @Override
     protected void doGet(final HttpServletRequest req, final HttpServletResponse resp) throws ServletException, IOException {
         final String tweetId = req.getParameter("tweetid");
-        if (req.getParameter("forward") == null) {
-            int target = hashLocation(tweetId);
+        int target = Math.abs(tweetId.hashCode()) % 6;
+        if (!instances[target].equals(dns)) {
             System.out.println(req.getQueryString());
-            resp.sendRedirect("http://" + instances[target] + "/q4?" + req.getQueryString() + "&forward=true");
+            resp.sendRedirect(instances[target] + req.getQueryString());
             return;
         }
         String operation = req.getParameter("op");
@@ -111,16 +80,10 @@ public class Q4Servlet extends HttpServlet {
             sequence.incrementAndGet();
             if (operation.equals("set")) {
                 dao.putData(dao.getQuery(tweetId, fields, payload, seqNum));
-//                Q4CacheUtil.setCache(tweetId, fields, payload);
                 sequence.notifyAll();
             } else {
-//                String cached = Q4CacheUtil.getCache(tweetId, fields);
                 String response;
-//                if (!cached.equals("")) {
-//                    response = cached;
-//                } else {
                 response = dao.getData(tweetId, fields);
-//                }
                 sequence.notifyAll();
                 if (response != null && !response.isEmpty() && !response.equals("null") && !response.equals("NULL")) {
                     result.append(response);
