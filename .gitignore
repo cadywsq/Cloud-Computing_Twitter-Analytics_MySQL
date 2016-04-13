@@ -76,6 +76,9 @@ local.properties
 # IntelliJ
 /out/
 
+META-INF/
+classes/
+
 # mpeltonen/sbt-idea plugin
 .idea_modules/
 
