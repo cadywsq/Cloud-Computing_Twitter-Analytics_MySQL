@@ -2,8 +2,8 @@
 ### Overall Objectives:       
 	* Build a high performance and reliable web service on the cloud within a specified budget.
 	* Design, develop, deploy and optimize functional web-servers that can handle a high load (~ tens of thousands of requests per second).
-	* Design and implement Extract Transform and Load (ETL) on a large JSON Twitter dataset of tweets (~ 1 TB) and load into MySQL and HBase systems.
-	* Design schema as well as configure and optimize MySQL and HBase databases to deal with scale and improve throughput.
+	* Design and implement Extract Transform and Load (ETL) on a large JSON Twitter dataset of tweets (~ 1 TB) and load into MySQL.
+	* Design schema as well as configure and optimize MySQL databases to deal with scale and improve throughput.
 	* Explore methods to identify the potential bottlenecks in a cloud-based web service and methods to improve performance.
               
 ### Tasks:
